@@ -1,7 +1,7 @@
 #include <curl/curl.h>
 #include <string>
 #include <iostream>
-#include <jansson.h>
+#include <json/json.h>
 
 /*
  * Write data callback function (called within the context of 
@@ -20,26 +20,25 @@ size_t write_data( void *buffer, size_t size, size_t nmemb, void *userp )
 
 void hnews_parse( std::string feed )
 {
-  json_error_t j_error;
-  const json_t *root = json_loads( feed.c_str(), 0, &j_error );
+  json_object *root = json_tokener_parse( feed.c_str() );
   if ( !root ) {
-    std::cerr << "Unexpected JSON response: error " << j_error.text << std::endl;
+    std::cerr << "Unexpected JSON response error " << std::endl;
   } else {
-    const json_t *j_array = json_object_get( root, "items" );
-    size_t j_array_size = json_array_size( j_array );
+    json_object *j_array = json_object_object_get( root, "items" );
+    size_t j_array_size = json_object_array_length( j_array );
     for( size_t i = 0; i < j_array_size-1; i++ ) {
-      const json_t *j_article = json_array_get( j_array, i );
-      json_t *j_title = json_object_get( j_article, "title" );
-      std::cout << i << ": " << json_string_value( j_title ) << std::endl;
-      json_t *j_url = json_object_get( j_article, "url" );
-      std::cout << json_string_value( j_url ) << std::endl;
-      json_t *j_comments_count = json_object_get( j_article, "comments" );
+      json_object *j_article = json_object_array_get_idx( j_array, i );
+      json_object *j_title = json_object_object_get( j_article, "title" );
+      std::cout << i << ": " << json_object_get_string( j_title ) << std::endl;
+      json_object *j_url = json_object_object_get( j_article, "url" );
+      std::cout << json_object_get_string( j_url ) << std::endl;
+      json_object *j_comments_count = json_object_object_get( j_article, "comments" );
       if( j_comments_count != NULL ) {
-        std::cout << " (" << json_string_value( j_comments_count ) << ")";
+        std::cout << " (" << json_object_get_string( j_comments_count ) << ")";
       }
-      json_t *j_score = json_object_get( j_article, "score" );
+      json_object *j_score = json_object_object_get( j_article, "score" );
       if( j_score != NULL ) {
-        std::cout << " (" << json_string_value( j_score ) << ")";
+        std::cout << " (" << json_object_get_string( j_score ) << ")";
       }
       if( j_comments_count || j_score ) {
         std::cout << std::endl;
