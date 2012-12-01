@@ -3,6 +3,8 @@
 #include <iostream>
 #include <json/json.h>
 
+const char* HOME_PAGE_URL = "http://hndroidapi.appspot.com/news/format/json/page/";
+const char* COMMENTS_URL = "http://hndroidapi.appspot.com/nestedcomments/format/json/id/";
 /*
  * Write data callback function (called within the context of 
  * curl_easy_perform.
@@ -17,8 +19,26 @@ size_t write_data( void *buffer, size_t size, size_t nmemb, void *userp )
   return segsize;
 }
 
+void comments_parse( std::string feed, std::string item_id )
+{
+  json_object *root = json_tokener_parse( (feed + item_id).c_str() );
+  if ( !root ) {
+    std::cerr << "Unexpected JSON response error " << std::endl;
+  } else {
+    json_object *j_array = json_object_object_get( root, "items" );
+    size_t j_array_size = json_object_array_length( j_array );
+    // Skip the last item as it is just a placeholder
+    for( size_t i = 0; i < j_array_size-1; i++ ) {
+      json_object *j_article = json_object_array_get_idx( j_array, i );
+      json_object *j_username = json_object_object_get( j_article, "username" );
+      json_object *j_comment = json_object_object_get( j_article, "comment" );
+      std::cout << json_object_get_string( j_username ) << "says: " << json_object_get_string( j_comment ) << std::endl;
+      std::cout << std::endl;
+    }
+  }
+}
 
-void hnews_parse( std::string feed )
+void home_page_parse( std::string feed )
 {
   json_object *root = json_tokener_parse( feed.c_str() );
   if ( !root ) {
@@ -26,10 +46,12 @@ void hnews_parse( std::string feed )
   } else {
     json_object *j_array = json_object_object_get( root, "items" );
     size_t j_array_size = json_object_array_length( j_array );
+    // Skip the last item as it is just a placeholder
     for( size_t i = 0; i < j_array_size-1; i++ ) {
       json_object *j_article = json_object_array_get_idx( j_array, i );
       json_object *j_title = json_object_object_get( j_article, "title" );
-      std::cout << i << ": " << json_object_get_string( j_title ) << std::endl;
+      json_object *j_item_id = json_object_object_get( j_article, "item_id" );
+      std::cout << json_object_get_int( j_item_id ) << ": " << json_object_get_string( j_title ) << std::endl;
       json_object *j_url = json_object_object_get( j_article, "url" );
       std::cout << json_object_get_string( j_url ) << std::endl;
       json_object *j_comments_count = json_object_object_get( j_article, "comments" );
@@ -46,11 +68,10 @@ void hnews_parse( std::string feed )
       std::cout << std::endl;
     }
   }
-  std::cout.flush();
 }
  
 
-int main(void)
+int main( int argc, char *argv[] )
 {
   CURL *curl;
   CURLcode res;
@@ -58,7 +79,7 @@ int main(void)
  
   curl = curl_easy_init();
   if( curl ) {
-    curl_easy_setopt( curl, CURLOPT_URL, "http://hndroidapi.appspot.com/news/format/json/page/" );
+    curl_easy_setopt( curl, CURLOPT_URL, HOME_PAGE_URL );
     curl_easy_setopt( curl, CURLOPT_WRITEDATA, (void *)&feed );
     curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, write_data );
  
@@ -68,7 +89,16 @@ int main(void)
     if( res != CURLE_OK ) {
       std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror( res ) << std::endl;
     } else {
-      hnews_parse( feed );
+      switch(argc) {
+        case 1:
+          home_page_parse( feed );
+          break;
+        case 2:
+          comments_parse( feed, std::string(argv[1]) );
+          break;
+        default:
+          std::cerr << "Usage: hnews <item_id>" << std::endl;
+      }
     }
     /* always cleanup */ 
     curl_easy_cleanup( curl );
