@@ -76,7 +76,7 @@ void home_page_parse( std::string feed )
       std::cout << KGRN << json_object_get_int( j_item_id ) << KNRM << ": ";
       std::cout << KCYN << json_object_get_string( j_title ) << KNRM << std::endl;
       json_object *j_url = json_object_object_get( j_article, "url" );
-      std::cout << KMAG << json_object_get_string( j_url ) << KNRM << std::endl;
+      std::cout << KYEL << json_object_get_string( j_url ) << KNRM << std::endl;
       json_object *j_comments_count = json_object_object_get( j_article, "comments" );
       if( j_comments_count != NULL ) {
         std::cout << "(" << json_object_get_string( j_comments_count ) << ")";
