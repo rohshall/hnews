@@ -10,7 +10,7 @@ const std::string COMMENTS_URL = "http://hndroidapi.appspot.com/nestedcomments/f
  * Write data callback function (called within the context of 
  * curl_easy_perform.
  */
-size_t write_data( void *buffer, size_t size, size_t nmemb, void *userp )
+int write_data( void *buffer, int size, int nmemb, void *userp )
 {
   int segsize = size * nmemb;
   const char* src = (const char*) buffer;
@@ -20,6 +20,23 @@ size_t write_data( void *buffer, size_t size, size_t nmemb, void *userp )
   return segsize;
 }
 
+void comments_array_parse( json_object* j_array, int level )
+{
+  int j_array_size = json_object_array_length( j_array );
+  for( int i = 0; i < j_array_size; i++ ) {
+    json_object *j_article = json_object_array_get_idx( j_array, i );
+    json_object *j_username = json_object_object_get( j_article, "username" );
+    json_object *j_comment = json_object_object_get( j_article, "comment" );
+    for( int l = 0; l < level; l++ ) {
+      std::cout << '\t';
+    }
+    std::cout << json_object_get_string( j_username ) << ": " << json_object_get_string( j_comment ) << std::endl;
+    std::cout << std::endl;
+    json_object *j_children = json_object_object_get( j_article, "children" );
+    comments_array_parse( j_children, level + 1 );
+  }
+}
+
 void comments_parse( std::string feed )
 {
   json_object *root = json_tokener_parse( feed.c_str() );
@@ -27,15 +44,7 @@ void comments_parse( std::string feed )
     std::cerr << "Unexpected JSON response error " << std::endl;
   } else {
     json_object *j_array = json_object_object_get( root, "items" );
-    size_t j_array_size = json_object_array_length( j_array );
-    // Skip the last item as it is just a placeholder
-    for( size_t i = 0; i < j_array_size-1; i++ ) {
-      json_object *j_article = json_object_array_get_idx( j_array, i );
-      json_object *j_username = json_object_object_get( j_article, "username" );
-      json_object *j_comment = json_object_object_get( j_article, "comment" );
-      std::cout << json_object_get_string( j_username ) << ": " << json_object_get_string( j_comment ) << std::endl;
-      std::cout << std::endl;
-    }
+    comments_array_parse( j_array, 0 );
   }
 }
 
@@ -46,9 +55,9 @@ void home_page_parse( std::string feed )
     std::cerr << "Unexpected JSON response error " << std::endl;
   } else {
     json_object *j_array = json_object_object_get( root, "items" );
-    size_t j_array_size = json_object_array_length( j_array );
+    int j_array_size = json_object_array_length( j_array );
     // Skip the last item as it is just a placeholder
-    for( size_t i = 0; i < j_array_size-1; i++ ) {
+    for( int i = 0; i < j_array_size-1; i++ ) {
       json_object *j_article = json_object_array_get_idx( j_array, i );
       json_object *j_title = json_object_object_get( j_article, "title" );
       json_object *j_item_id = json_object_object_get( j_article, "item_id" );
