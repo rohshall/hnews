@@ -1,4 +1,4 @@
-# hnews - Hacker News Reader in C++
+# hnews - command-line Hacker News Reader in C++
 
 Hacker news http://news.ycombinator.com is an excellent news resource for developers. 
 Though it does not have official APIs, http://hndroidapi.appspot.com/ provides ths 
