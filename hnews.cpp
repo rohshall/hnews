@@ -1,10 +1,11 @@
+#include <cstdlib>
 #include <curl/curl.h>
 #include <string>
 #include <iostream>
 #include <json/json.h>
 
-const char* HOME_PAGE_URL = "http://hndroidapi.appspot.com/news/format/json/page/";
-const char* COMMENTS_URL = "http://hndroidapi.appspot.com/nestedcomments/format/json/id/";
+const std::string HOME_PAGE_URL = "http://hndroidapi.appspot.com/news/format/json/page/";
+const std::string COMMENTS_URL = "http://hndroidapi.appspot.com/nestedcomments/format/json/id/";
 /*
  * Write data callback function (called within the context of 
  * curl_easy_perform.
@@ -19,9 +20,9 @@ size_t write_data( void *buffer, size_t size, size_t nmemb, void *userp )
   return segsize;
 }
 
-void comments_parse( std::string feed, std::string item_id )
+void comments_parse( std::string feed )
 {
-  json_object *root = json_tokener_parse( (feed + item_id).c_str() );
+  json_object *root = json_tokener_parse( feed.c_str() );
   if ( !root ) {
     std::cerr << "Unexpected JSON response error " << std::endl;
   } else {
@@ -32,7 +33,7 @@ void comments_parse( std::string feed, std::string item_id )
       json_object *j_article = json_object_array_get_idx( j_array, i );
       json_object *j_username = json_object_object_get( j_article, "username" );
       json_object *j_comment = json_object_object_get( j_article, "comment" );
-      std::cout << json_object_get_string( j_username ) << "says: " << json_object_get_string( j_comment ) << std::endl;
+      std::cout << json_object_get_string( j_username ) << ": " << json_object_get_string( j_comment ) << std::endl;
       std::cout << std::endl;
     }
   }
@@ -62,6 +63,7 @@ void home_page_parse( std::string feed )
       if( j_score != NULL ) {
         std::cout << " (" << json_object_get_string( j_score ) << ")";
       }
+      // Add a newline if no comments or score is available 
       if( j_comments_count || j_score ) {
         std::cout << std::endl;
       }
@@ -79,25 +81,30 @@ int main( int argc, char *argv[] )
  
   curl = curl_easy_init();
   if( curl ) {
-    curl_easy_setopt( curl, CURLOPT_URL, HOME_PAGE_URL );
     curl_easy_setopt( curl, CURLOPT_WRITEDATA, (void *)&feed );
     curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, write_data );
  
+    switch(argc) {
+      case 1:
+        curl_easy_setopt( curl, CURLOPT_URL, HOME_PAGE_URL.c_str() );
+        break;
+      case 2:
+        curl_easy_setopt( curl, CURLOPT_URL, (COMMENTS_URL + argv[1]).c_str() );
+        break;
+      default:
+        std::cerr << "Usage: hnews [item_id]" << std::endl;
+        exit(1);
+    }
     /* Perform the request, res will get the return code */ 
     res = curl_easy_perform( curl );
     /* Check for errors */ 
     if( res != CURLE_OK ) {
       std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror( res ) << std::endl;
     } else {
-      switch(argc) {
-        case 1:
-          home_page_parse( feed );
-          break;
-        case 2:
-          comments_parse( feed, std::string(argv[1]) );
-          break;
-        default:
-          std::cerr << "Usage: hnews <item_id>" << std::endl;
+      if( argc == 1 ) {
+        home_page_parse( feed );
+      } else {
+        comments_parse( feed );
       }
     }
     /* always cleanup */ 
