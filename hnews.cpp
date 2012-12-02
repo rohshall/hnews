@@ -4,8 +4,20 @@
 #include <iostream>
 #include <json/json.h>
 
+// Hacker news URLs
 const std::string HOME_PAGE_URL = "http://hndroidapi.appspot.com/news/format/json/page/";
 const std::string COMMENTS_URL = "http://hndroidapi.appspot.com/nestedcomments/format/json/id/";
+
+// colors to output text
+const std::string KNRM = "\x1B[0m";
+const std::string KRED = "\x1B[31m";
+const std::string KGRN = "\x1B[32m";
+const std::string KYEL = "\x1B[33m";
+const std::string KBLU = "\x1B[34m";
+const std::string KMAG = "\x1B[35m";
+const std::string KCYN = "\x1B[36m";
+const std::string KWHT = "\x1B[37m";
+
 /*
  * Write data callback function (called within the context of 
  * curl_easy_perform.
@@ -30,7 +42,7 @@ void comments_array_parse( json_object* j_array, int level )
     for( int l = 0; l < level; l++ ) {
       std::cout << '\t';
     }
-    std::cout << json_object_get_string( j_username ) << ": " << json_object_get_string( j_comment ) << std::endl;
+    std::cout << KMAG << json_object_get_string( j_username ) << KNRM << ": " << json_object_get_string( j_comment ) << std::endl;
     std::cout << std::endl;
     json_object *j_children = json_object_object_get( j_article, "children" );
     comments_array_parse( j_children, level + 1 );
@@ -61,16 +73,17 @@ void home_page_parse( std::string feed )
       json_object *j_article = json_object_array_get_idx( j_array, i );
       json_object *j_title = json_object_object_get( j_article, "title" );
       json_object *j_item_id = json_object_object_get( j_article, "item_id" );
-      std::cout << json_object_get_int( j_item_id ) << ": " << json_object_get_string( j_title ) << std::endl;
+      std::cout << KGRN << json_object_get_int( j_item_id ) << KNRM << ": ";
+      std::cout << KCYN << json_object_get_string( j_title ) << KNRM << std::endl;
       json_object *j_url = json_object_object_get( j_article, "url" );
-      std::cout << json_object_get_string( j_url ) << std::endl;
+      std::cout << KMAG << json_object_get_string( j_url ) << KNRM << std::endl;
       json_object *j_comments_count = json_object_object_get( j_article, "comments" );
       if( j_comments_count != NULL ) {
-        std::cout << " (" << json_object_get_string( j_comments_count ) << ")";
+        std::cout << "(" << json_object_get_string( j_comments_count ) << ")";
       }
       json_object *j_score = json_object_object_get( j_article, "score" );
       if( j_score != NULL ) {
-        std::cout << " (" << json_object_get_string( j_score ) << ")";
+        std::cout << "(" << json_object_get_string( j_score ) << ")";
       }
       // Add a newline if no comments or score is available 
       if( j_comments_count || j_score ) {
