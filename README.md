@@ -24,8 +24,8 @@ sudo apt-get install json-c curl
 
 ### Mac OS X
 
-brew install json-c
-brew install curl
+brew install json-c  
+brew install curl  
 
 
 ## Build
