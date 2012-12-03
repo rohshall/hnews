@@ -2,7 +2,8 @@
 
 Hacker news http://news.ycombinator.com is an excellent news resource for developers. 
 Though it does not have official APIs, http://hndroidapi.appspot.com/ provides ths 
-APIs that this program uses to get articles and comments.
+APIs that this program uses to get articles and comments.  
+
 
 ## Dependencies
 
@@ -11,6 +12,8 @@ APIs that this program uses to get articles and comments.
 
 These libraries are commonly available in your package manager.
 
+### Linux
+
 For Arch Linux, you can install using:
 
 sudo pacman -S json-c curl
@@ -18,6 +21,12 @@ sudo pacman -S json-c curl
 For Debian-based systems (including Ubuntu), 
 
 sudo apt-get install json-c curl
+
+### Mac OS X
+
+brew install json-c
+brew install curl
+
 
 ## Build
 g++ -o hnews hnews.cpp -lcurl -ljson
