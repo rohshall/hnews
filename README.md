@@ -44,7 +44,7 @@ The article IDs are used in the following command to get the comments on these a
 
 ### Get the comments on articles:  
 ```
-./hnews item_id
+./hnews article_id
 ```
 Comments are hierarchical and their level is indicated by tabs. So, a child comment is printed below the parent comment after a tab.
 
