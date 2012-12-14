@@ -15,35 +15,36 @@ These libraries are commonly available in your package manager.
 ### Linux
 
 For Arch Linux, you can install using:
-
+```
 sudo pacman -S json-c curl
-
+```
 For Debian-based systems (including Ubuntu), 
-
+```
 sudo apt-get install json-c curl
-
+```
 ### Mac OS X
-
+```
 brew install json-c  
 brew install curl  
-
+```
 
 ## Build
+```
 g++ -o hnews hnews.cpp -lcurl -ljson
-
+```
 ## Usage
 
 ### List the articles on home page
-
-**./hnews**  
-
+```
+./hnews
+```
 lists the articles along with their IDs and URLs.  
 Most terminals on unix-based systems are capable of opening the URLs from the terminal output.  
 The article IDs are used in the following command to get the comments on these articles.  
 
 ### Get the comments on articles:  
-
-**./hnews item_id**  
-
+```
+./hnews item_id
+```
 Comments are hierarchical and their level is indicated by tabs. So, a child comment is printed below the parent comment after a tab.
 
