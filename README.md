@@ -8,43 +8,33 @@ APIs that this program uses to get articles and comments.
 ## Dependencies
 
 * libcurl: http://curl.haxx.se
-* libjson-c: https://github.com/json-c/json-c
+* tinyxml2: https://github.com/leethomason/tinyxml2
 
-These libraries are commonly available in your package manager.
+However tinyxml2 is really tiny consisting of 1 .cpp and 1 .h file and is bundled with the application itself.
+
+libcurl is commonly available in your package manager.
 
 ### Linux
 
 For Arch Linux, you can install using:
 ```
-sudo pacman -S json-c curl
+sudo pacman -S curl
 ```
 For Debian-based systems (including Ubuntu), 
 ```
-sudo apt-get install json-c curl
+sudo apt-get install curl
 ```
 ### Mac OS X
 ```
-brew install json-c  
 brew install curl  
 ```
 
 ## Build
 ```
-g++ -o hnews hnews.cpp -lcurl -ljson
+g++ -o hnews hnews.cpp tinyxml2.cpp -lcurl
 ```
 ## Usage
 
-### List the articles on home page
 ```
 ./hnews
 ```
-lists the articles along with their IDs and URLs.  
-Most terminals on unix-based systems are capable of opening the URLs from the terminal output.  
-The article IDs are used in the following command to get the comments on these articles.  
-
-### Get the comments on articles:  
-```
-./hnews article_id
-```
-Comments are hierarchical and their level is indicated by tabs. So, a child comment is printed below the parent comment after a tab.
-
