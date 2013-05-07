@@ -1,4 +1,6 @@
-# hnews - command-line Hacker News Reader in C++
+# hnews
+
+Command-line Hacker News Reader in C++, implemented by parsing the RSS feed
 
 ## Dependencies
 
